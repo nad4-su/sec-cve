@@ -81,7 +81,7 @@ SSH_IDENTITY_FILE=~/.ssh/id_ed25519 ./scripts/01-check-cve-2026-31431.sh --serve
 - `reports/CVE-2026-31431-inventory-<timestamp>.md`
 - `reports/CVE-2026-31431-inventory-<timestamp>.docx`
 
-`.docx` 파일은 `.md` 보고서를 Word OpenXML 문서로 변환한 공유용 문서입니다. 생성 보고서에는 내부 IP와 호스트명이 포함될 수 있으므로 `reports/` 아래 파일은 기본적으로 git 추적 대상에서 제외합니다.
+`.docx` 파일은 `.md` 보고서를 Word OpenXML 문서로 변환한 공유용 문서입니다. Google Docs/Word에서 읽기 쉽도록 요약표는 표로 유지하고, 서버별 상세 판정은 넓은 8컬럼 표 대신 서버별 상세 블록으로 재배치합니다. 생성 보고서에는 내부 IP와 호스트명이 포함될 수 있으므로 `reports/` 아래 파일은 기본적으로 git 추적 대상에서 제외합니다.
 
 보고서 주요 판정:
 
