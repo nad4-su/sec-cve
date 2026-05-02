@@ -15,6 +15,7 @@ Linux Kernel `algif_aead` 로컬 권한 상승 취약점(Copy Fail)에 대해 �
 ├── reports/                    # 실행 결과 보고서 출력 위치
 └── scripts/
     ├── 01-check-cve-2026-31431.sh
+    ├── markdown_to_docx.py
     └── 02-remediate-cve-2026-31431.sh
 ```
 
@@ -48,18 +49,50 @@ cd /home/nad4/workspace/cve-2026-31431-iac-kit
 ./scripts/01-check-cve-2026-31431.sh --servers ./config/servers.local.tsv
 ```
 
+특정 서버만 점검:
+
+```bash
+./scripts/01-check-cve-2026-31431.sh --servers ./config/servers.local.tsv --target example-server
+```
+
+특정 SSH 키를 명시:
+
+```bash
+./scripts/01-check-cve-2026-31431.sh --servers ./config/servers.local.tsv --identity ~/.ssh/id_ed25519
+```
+
+또는:
+
+```bash
+SSH_IDENTITY_FILE=~/.ssh/id_ed25519 ./scripts/01-check-cve-2026-31431.sh --servers ./config/servers.local.tsv
+```
+
+키 인증 실패 시 비밀번호 프롬프트 허용:
+
+```bash
+./scripts/01-check-cve-2026-31431.sh --servers ./config/servers.local.tsv --target example-server --password
+```
+
+스크립트는 기본적으로 `BatchMode=yes`로 실행되어 비밀번호 프롬프트 없이 키 인증만 시도합니다. `--password`를 주면 `BatchMode=no`로 바꾸어 SSH password/keyboard-interactive 인증을 허용합니다. `host` 컬럼에는 IP뿐 아니라 `~/.ssh/config`의 `Host` alias도 사용할 수 있으므로, 서버별 `IdentityFile`을 이미 SSH config에 관리하고 있다면 alias를 넣는 방식이 가장 간단합니다.
+
 생성물:
 
 - `reports/CVE-2026-31431-inventory-<timestamp>.csv`
 - `reports/CVE-2026-31431-inventory-<timestamp>.md`
+- `reports/CVE-2026-31431-inventory-<timestamp>.docx`
 
-주요 판정 상태:
+`.docx` 파일은 `.md` 보고서를 Word OpenXML 문서로 변환한 공유용 문서입니다. 생성 보고서에는 내부 IP와 호스트명이 포함될 수 있으므로 `reports/` 아래 파일은 기본적으로 git 추적 대상에서 제외합니다.
 
-- `MITIGATED`: 모듈 미로드 + mitigation 존재 + 관련 업데이트 없음
-- `MITIGATED_UPDATE_PENDING`: mitigation 존재, 단 커널/kmod 업데이트 대기
-- `FAIL_MODULE_LOADED`: 취약 모듈 로드 중
-- `NO_MODULE_BUT_MITIGATION_MISSING`: 모듈은 미로드이나 차단 설정 없음
-- `ERROR`: SSH/명령 실행 실패
+보고서 주요 판정:
+
+- `KISA 기준 영향 있음 - 긴급`: `algif_aead` 모듈이 현재 로드됨
+- `KISA 기준 영향 있음 - 업데이트/재부팅 필요`: 차단 설정은 있으나 커널/kmod 업데이트 또는 재부팅 필요
+- `KISA 기준 영향 있음 - 차단 설정 필요`: KISA 기준 영향 버전이며 모듈 로드 차단 설정 없음
+- `KISA 기준 영향 있음 - 차단 적용됨`: KISA 기준 영향 버전이나 모듈 로드 차단 설정 있음
+- `KISA 기준 영향 없음`: KISA 공지의 해결 버전 이상
+- `확인 실패`: SSH 접속 또는 원격 명령 실행 실패
+
+KISA 기준은 보호나라 `Linux Kernel 보안 업데이트 권고`의 영향받는 버전(`6.19.12 미만`, `6.18.22 미만`)과 해결 버전(`6.19.12 이상`, `6.18.22 이상`)을 사용합니다. 배포판 커널은 보안 패치가 백포트될 수 있으므로 `KISA 기준 영향 있음`은 운영 조치 대상 선별 기준으로 봅니다.
 
 ## 2차: 조치 스크립트
 
@@ -69,6 +102,18 @@ cd /home/nad4/workspace/cve-2026-31431-iac-kit
 
 ```bash
 ./scripts/02-remediate-cve-2026-31431.sh --apply --target example-server
+```
+
+특정 SSH 키를 명시:
+
+```bash
+./scripts/02-remediate-cve-2026-31431.sh --apply --target example-server --identity ~/.ssh/id_ed25519
+```
+
+키 인증 실패 시 비밀번호 프롬프트 허용:
+
+```bash
+./scripts/02-remediate-cve-2026-31431.sh --apply --target example-server --password
 ```
 
 전체 서버 조치:
