@@ -1,0 +1,8 @@
+# Local target inventory and generated reports may contain internal hostnames/IPs.
+config/servers.local.tsv
+reports/*
+!reports/.gitkeep
+
+# Editor/OS noise
+.DS_Store
+*.swp
